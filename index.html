@@ -1,80 +1,4 @@
-import pandas as pd
-import json
 
-# Chemin vers le fichier CSV
-csv_file = 'ontologie.csv'  # Chemin relatif pour GitHub Actions
-
-# Lire le fichier CSV
-df = pd.read_csv(csv_file)
-
-# Créer un dictionnaire label -> type pour les infos
-label_to_type = {}
-label_to_category = {}
-category_colors = {
-    'individu': '#FF6B6B',
-    'cognitif': '#4ECDC4',
-    'normes externes': '#45B7D1',
-}
-
-for index, row in df.iterrows():
-    label = row['label']
-    type_info = row['type'] if pd.notna(row['type']) else 'Aucune info'
-    category = row.get('catégorie', row.get('categorie', 'Autre'))
-    if pd.isna(category):
-        category = 'Autre'
-    else:
-        # Si plusieurs catégories, prendre la première
-        category = str(category).split(',')[0].strip()
-    label_to_type[label] = type_info
-    label_to_category[label] = category
-    
-# Ajouter couleur par défaut pour catégories inconnues
-default_color = '#95A5A6'
-
-# Dictionnaires pour nœuds et arêtes
-nodes = []
-edges = []
-node_id = 0
-node_map = {}
-
-# Ajouter les nœuds et les arêtes
-for index, row in df.iterrows():
-    label = row['label']
-    connections = row['connections']
-    
-    # Ajouter le nœud si pas déjà présent
-    if label not in node_map:
-        node_map[label] = node_id
-        category = label_to_category.get(label, 'Autre')
-        color = category_colors.get(category, default_color)
-        nodes.append({
-            "id": node_id, 
-            "label": label, 
-            "title": label_to_type.get(label, 'Aucune info'),
-            "color": color
-        })
-        node_id += 1
-    
-    # Si connections n'est pas vide, ajouter les arêtes
-    if pd.notna(connections):
-        # Supprimer les espaces et diviser par virgule
-        connected_nodes = [conn.strip() for conn in connections.split(',')]
-        for conn in connected_nodes:
-            if conn not in node_map:
-                node_map[conn] = node_id
-                category = label_to_category.get(conn, 'Autre')
-                color = category_colors.get(category, default_color)
-                nodes.append({
-                    "id": node_id, 
-                    "label": conn, 
-                    "title": label_to_type.get(conn, 'Aucune info'),
-                    "color": color
-                })
-                node_id += 1
-            edges.append({"from": node_map[label], "to": node_map[conn]})
-
-# Générer le HTML
-html_content = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -233,10 +157,10 @@ html_content = """
     <div id="network"></div>
     <div id="legend">
         <h3>Légende</h3>
-        <div class="legend-item"><div class="legend-color" style="background: #FF6B6B;"></div><span>Individu</span></div>
-        <div class="legend-item"><div class="legend-color" style="background: #4ECDC4;"></div><span>Cognitif</span></div>
-        <div class="legend-item"><div class="legend-color" style="background: #45B7D1;"></div><span>Normes externes</span></div>
-        <div class="legend-item"><div class="legend-color" style="background: #95A5A6;"></div><span>Autre</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #FF6B9D;"></div><span>Individu</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #4FC3F7;"></div><span>Cognitif</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #81C784;"></div><span>Normes externes</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #FFD54F;"></div><span>Autre</span></div>
     </div>
     <div id="overlay" onclick="hidePopup()"></div>
     <div id="popup">
@@ -244,8 +168,8 @@ html_content = """
         <button onclick="hidePopup()">Fermer</button>
     </div>
     <script type="text/javascript">
-        var nodes = new vis.DataSet(""" + json.dumps(nodes, ensure_ascii=False) + """);
-        var edges = new vis.DataSet(""" + json.dumps(edges) + """);
+        var nodes = new vis.DataSet([{"id": 0, "label": "Aliénation", "title": "Être aliéné, c’est ne plus s’appartenir. C’est avoir le sentiment d’être dépossédé de soi-même. \nFait de ne plus s'appartenir soi-même, d'être la propriété réelle ou\nsymbolique de quelqu'un ou de quelque chose d’autre.\nExemple : je peux être aliéné par une dépendance", "color": "#FF6B9D"}, {"id": 1, "label": "Identité", "title": "Ce qui permet de reconnaître quelqu’un ou quelque chose. Selon le principe d’identité, l’identité est le fait d’être égal à soi. Une chose est toujours égale à elle-même (A=A). Il s’agit d’un principe logique qui permet de s’assurer\nqu’une chose ne désigne pas une autre chose : lorsque j’utilise le terme « arbre », c’est pour désigner la chose arbre, et non une autre chose. Ce terme est toujours valable, en ce sens que demain, le mot n’aura pas changé et désignera toujours la même chose. L’identité désigne ainsi ce qui permet de reconnaître une chose dans son unité et dans le temps. Le concept englobe l’ensemble des caractéristiques immuables (qui ne changent pas) pouvant qualifier cette chose.", "color": "#FF6B9D"}, {"id": 2, "label": "Émancipation", "title": "Être émancipé, c’est sentir qu’on a réussi à se libérer d’une contrainte, d’une servitude \nExemple : je peux réussir à me libérer d'une emprise", "color": "#FF6B9D"}, {"id": 3, "label": "Amour", "title": "Aucune info", "color": "#FF6B9D"}, {"id": 4, "label": "Attention", "title": "Aucune info", "color": "#4FC3F7"}, {"id": 5, "label": "Perception", "title": "Aucune info", "color": "#4FC3F7"}, {"id": 6, "label": "Conscience", "title": "Aucune info", "color": "#4FC3F7"}, {"id": 7, "label": "Liberté\"", "title": "Aucune info", "color": "#FFD54F"}, {"id": 8, "label": "Autorité", "title": "Aucune info", "color": "#81C784"}, {"id": 9, "label": "Pouvoir", "title": "Aucune info", "color": "#81C784"}, {"id": 10, "label": "Communauté", "title": "Une communauté est un groupement d’individus réunis autour d’une\nculture et d’une identité communes. La communauté se distingue de la société, qui tend à encourager l’émancipation de l’individu par rapport au groupe qui peut être aliénant. Dans la communauté, c’est le commun qui prime sur l’individu : celui-ci n’est qu’une partie formant le tout, ce qui signifie qu’il y a une hiérarchie entre les membres de la communauté et la communauté elle-même.", "color": "#FF6B9D"}, {"id": 11, "label": "Culture", "title": "La culture est l’ensemble des connaissances et des comportements propres à une communauté humaine, à un groupe humain constitué par ses affinités.", "color": "#81C784"}, {"id": 12, "label": "Inconscient", "title": "Aucune info", "color": "#4FC3F7"}, {"id": 13, "label": "Croyance", "title": "Aucune info", "color": "#FF6B9D"}, {"id": 14, "label": "Religion", "title": "Aucune info", "color": "#FF6B9D"}, {"id": 15, "label": "Attention\"", "title": "Aucune info", "color": "#FFD54F"}, {"id": 16, "label": "Devoir", "title": "Aucune info", "color": "#FF6B9D"}, {"id": 17, "label": "Morale", "title": "La morale désigne la recherche d’un idéal de conduite, qui définit des règles\ncomportementales idéales qu’il faudrait suivre, mais qui ne sont pas toujours ajustées à la réalité.", "color": "#81C784"}, {"id": 18, "label": "Éthique", "title": "L’éthique désigne une branche philosophique qui cherche à connaitre et à\ndéterminer les principes régulateurs de l’action humaine. En ce sens, elle fournit des règles concrètes à suivre pour l’action.", "color": "#FF6B9D"}, {"id": 19, "label": "Différence", "title": "Au contraire de l’identité, la différence est ce qui permet de distinguer les\nchoses. Elle est l’exact opposé de l’identité en ce qu’elle ne rassemble pas et ne vise pas\nl’unité.", "color": "#4FC3F7"}, {"id": 20, "label": "Société", "title": "La société place l’individu au centre des préoccupations. Elle forme un Tout qui est formé par la juxtaposition des individus, c’est-à-dire que les individus\nvivent les uns à côté des autres sans pour autant partager des choses communes. Les individus peuvent être distingués les uns des autres et demeurent séparés malgré leurs liens sociaux. Contrairement à la communauté, dans la société, les consciences ne sont plus agrégées les unes aux autres mais différenciées ce qui engendre l’émancipation de l’individu, qui s’accompagne du règne de l’individualisme. La société encourage alors\nl’autonomie de l’individu.", "color": "#81C784"}, {"id": 21, "label": "État", "title": "Ensemble des institutions (politiques, économiques, sociales, culturelles...) qui\ngouvernent un pays sur un territoire donné. C’est un pouvoir souverain. C’est l’État qui dicte les règles pour l’ensemble des citoyens. Le pouvoir contraint les hommes à obéir aux lois qu’il édicte. ", "color": "#81C784"}, {"id": 22, "label": "Liberté", "title": "État d’un individu qui n’est soumis qu’aux obligations qu’il se choisit et dont\nl’action n’est pas limitée par des contraintes externes. État de celui qui n’est pas aliéné, dont l’existence ne dépend pas d’un autre que lui.", "color": "#FF6B9D"}, {"id": 23, "label": "Mémoire", "title": "Aucune info", "color": "#4FC3F7"}, {"id": 24, "label": "\"Attention", "title": "Aucune info", "color": "#FFD54F"}, {"id": 25, "label": "Culture\"", "title": "Aucune info", "color": "#FFD54F"}, {"id": 26, "label": "Mort", "title": "Aucune info", "color": "#FF6B9D"}, {"id": 27, "label": "Temps", "title": "Aucune info", "color": "#81C784"}, {"id": 28, "label": "Mémoire\"", "title": "Aucune info", "color": "#FFD54F"}, {"id": 29, "label": "Philosophie", "title": "Selon l'étymologie grecque, la philosophie est un désir de sagesse, entendue comme la connaissance de ce qui est ", "color": "#81C784"}, {"id": 30, "label": "Vérité", "title": "Aucune info", "color": "#81C784"}, {"id": 31, "label": "Technique", "title": "Aucune info", "color": "#81C784"}, {"id": 32, "label": "Travail", "title": "Aucune info", "color": "#FF6B9D"}, {"id": 33, "label": "Bonheur", "title": "État de satisfaction complète et durable", "color": "#FF6B9D"}]);
+        var edges = new vis.DataSet([{"from": 0, "to": 1}, {"from": 0, "to": 2}, {"from": 3, "to": 1}, {"from": 4, "to": 5}, {"from": 4, "to": 6}, {"from": 4, "to": 7}, {"from": 8, "to": 9}, {"from": 10, "to": 11}, {"from": 10, "to": 1}, {"from": 10, "to": 2}, {"from": 6, "to": 12}, {"from": 13, "to": 14}, {"from": 13, "to": 15}, {"from": 11, "to": 10}, {"from": 11, "to": 1}, {"from": 16, "to": 17}, {"from": 16, "to": 18}, {"from": 16, "to": 0}, {"from": 16, "to": 2}, {"from": 19, "to": 1}, {"from": 19, "to": 20}, {"from": 2, "to": 0}, {"from": 21, "to": 9}, {"from": 21, "to": 8}, {"from": 21, "to": 22}, {"from": 18, "to": 17}, {"from": 1, "to": 19}, {"from": 1, "to": 10}, {"from": 12, "to": 6}, {"from": 22, "to": 2}, {"from": 22, "to": 0}, {"from": 23, "to": 24}, {"from": 23, "to": 12}, {"from": 23, "to": 6}, {"from": 23, "to": 22}, {"from": 23, "to": 25}, {"from": 17, "to": 18}, {"from": 26, "to": 22}, {"from": 26, "to": 27}, {"from": 5, "to": 24}, {"from": 5, "to": 13}, {"from": 5, "to": 28}, {"from": 29, "to": 30}, {"from": 29, "to": 20}, {"from": 9, "to": 21}, {"from": 9, "to": 8}, {"from": 14, "to": 30}, {"from": 20, "to": 10}, {"from": 20, "to": 0}, {"from": 20, "to": 11}, {"from": 20, "to": 2}, {"from": 20, "to": 1}, {"from": 20, "to": 21}, {"from": 31, "to": 27}, {"from": 31, "to": 32}, {"from": 31, "to": 2}, {"from": 31, "to": 0}, {"from": 31, "to": 22}, {"from": 27, "to": 32}, {"from": 27, "to": 27}, {"from": 32, "to": 27}, {"from": 32, "to": 1}, {"from": 32, "to": 6}, {"from": 30, "to": 29}, {"from": 30, "to": 14}, {"from": 33, "to": 22}, {"from": 33, "to": 18}]);
         var container = document.getElementById('network');
         var data = {
             nodes: nodes,
@@ -256,16 +180,30 @@ html_content = """
                 enabled: true
             },
             edges: {
-                arrows: 'to'
+                arrows: 'to',
+                smooth: {
+                    type: 'continuous'
+                }
             },
             interaction: {
                 hover: true,
                 tooltipDelay: 200
             },
             nodes: {
-                scaling: {
-                    min: 10,
-                    max: 30
+                shape: 'circle',
+                size: 25,
+                font: {
+                    size: 14,
+                    color: '#333'
+                },
+                borderWidth: 2,
+                borderWidthSelected: 3,
+                shadow: {
+                    enabled: true,
+                    color: 'rgba(0,0,0,0.15)',
+                    size: 8,
+                    x: 2,
+                    y: 2
                 }
             }
         };
@@ -298,10 +236,4 @@ html_content = """
         });
     </script>
 </body>
-</html>"""
-
-# Écrire le fichier HTML
-with open('ontologie_interactive.html', 'w', encoding='utf-8') as f:
-    f.write(html_content)
-
-print("Fichier ontologie_interactive.html généré avec succès. Ouvrez-le dans un navigateur pour voir le graphe interactif.")
+</html>
