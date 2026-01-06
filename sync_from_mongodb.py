@@ -22,7 +22,20 @@ def sync_from_mongodb(connection_string, database_name, collection_name):
     try:
         # Connexion à MongoDB
         print("📡 Connexion à MongoDB...")
-        client = MongoClient(connection_string, tlsCAFile=certifi.where())
+        
+        # Configuration SSL pour compatibilité GitHub Actions
+        tls_params = {}
+        if os.environ.get('GITHUB_ACTIONS'):
+            # Sur GitHub Actions, utiliser les certificats système
+            tls_params = {
+                'tls': True,
+                'tlsAllowInvalidCertificates': False
+            }
+        else:
+            # En local, utiliser certifi
+            tls_params = {'tlsCAFile': certifi.where()}
+        
+        client = MongoClient(connection_string, **tls_params)
         db = client[database_name]
         collection = db[collection_name]
         
@@ -110,11 +123,12 @@ def insert_sample_data(connection_string, database_name, collection_name):
 
 if __name__ == "__main__":
     # Configuration MongoDB
-    # Option 1 : MongoDB local
-    # CONNECTION_STRING = "mongodb://localhost:27017/"
-    
-    # Option 2 : MongoDB Atlas (gratuit)
-    CONNECTION_STRING = "mongodb+srv://enovelli_db_user:iF3VNRTtH969Il9K@test-ontology.mnf8vlo.mongodb.net/?appName=Test-Ontology"
+    # Utiliser la variable d'environnement si disponible (GitHub Actions)
+    # Sinon utiliser la valeur par défaut (local)
+    CONNECTION_STRING = os.environ.get(
+        'MONGODB_URI',
+        "mongodb+srv://enovelli_db_user:iF3VNRTtH969Il9K@test-ontology.mnf8vlo.mongodb.net/?appName=Test-Ontology"
+    )
     
     DATABASE_NAME = "ontologie_sofia"
     COLLECTION_NAME = "concepts"
