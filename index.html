@@ -3,12 +3,28 @@
 <html>
 <head>
     <title>Ontologie Interactive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script type="text/javascript" src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 1.2rem;
+            padding: 10px;
+            text-align: center;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
         #network {
             width: 100%;
-            height: 600px;
-            border: 1px solid lightgray;
+            height: calc(100vh - 50px);
         }
         #popup {
             position: fixed;
@@ -17,11 +33,32 @@
             transform: translate(-50%, -50%);
             background: white;
             border: 1px solid black;
+            border-radius: 8px;
             padding: 20px;
             display: none;
             z-index: 1000;
-            max-width: 400px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
             word-wrap: break-word;
+        }
+        #popup-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:active {
+            background: #0056b3;
         }
         #overlay {
             position: fixed;
@@ -32,6 +69,15 @@
             background: rgba(0,0,0,0.5);
             display: none;
             z-index: 999;
+        }
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+                padding: 15px;
+            }
+            #popup {
+                max-width: 500px;
+            }
         }
     </style>
 </head>
