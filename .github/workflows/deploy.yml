@@ -39,10 +39,7 @@ jobs:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
         run: |
           python sync_from_mongodb.py
-      
-      - name: 📋 Copie vers index.html
-        run: |
-          cp ontologie_interactive.html index.html
+          mv ontologie_interactive.html index.html
       
       - name: 📤 Commit et push des changements
         run: |
