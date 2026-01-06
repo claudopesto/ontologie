@@ -50,7 +50,7 @@ def sync_from_mongodb(connection_string, database_name, collection_name):
             return False
         
         # Sauvegarde du CSV
-        csv_path = '/Users/elsa/Downloads/Concepts-Grid view (3).csv'
+        csv_path = 'ontologie.csv'  # Chemin relatif pour GitHub Actions
         df.to_csv(csv_path, index=False, encoding='utf-8')
         print(f"✅ CSV sauvegardé : {csv_path}")
         
