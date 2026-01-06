@@ -29,6 +29,11 @@ jobs:
         run: |
           pip install pymongo certifi pandas
       
+      - name: 🔍 Vérification des fichiers
+        run: |
+          pwd
+          ls -la
+      
       - name: 🔄 Synchronisation depuis MongoDB
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
