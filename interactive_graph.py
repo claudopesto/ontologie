@@ -2,7 +2,7 @@ import pandas as pd
 import json
 
 # Chemin vers le fichier CSV
-csv_file = '/Users/elsa/Downloads/Concepts-Grid view (3).csv'
+csv_file = 'ontologie.csv'  # Chemin relatif pour GitHub Actions
 
 # Lire le fichier CSV
 df = pd.read_csv(csv_file)
